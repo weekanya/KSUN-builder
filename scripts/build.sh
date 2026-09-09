@@ -316,8 +316,22 @@ package_anykernel() {
 
     sed -i 's/kernel\.string=.*/kernel.string=KernelSU Next for Nothing Phone (4a) (Frogger)/' "$ANYKERNEL_DIR/anykernel.sh" || true
 
-    git -C "$ANYKERNEL_DIR" archive --format=zip --output="$package" HEAD
-    zip -j "$package" "$image" "$ANYKERNEL_DIR/anykernel.sh"
+    if [ -f "$WORKSPACE_DIR/tools/arm64/busybox" ]; then
+        cp -f "$WORKSPACE_DIR/tools/arm64/busybox" "$ANYKERNEL_DIR/tools/busybox"
+        chmod 755 "$ANYKERNEL_DIR/tools/busybox"
+    fi
+    if [ -f "$WORKSPACE_DIR/tools/arm64/magiskboot" ]; then
+        cp -f "$WORKSPACE_DIR/tools/arm64/magiskboot" "$ANYKERNEL_DIR/tools/magiskboot"
+        chmod 755 "$ANYKERNEL_DIR/tools/magiskboot"
+    fi
+
+    cp -f "$image" "$ANYKERNEL_DIR/Image"
+
+    rm -f "$package"
+    (
+        cd "$ANYKERNEL_DIR"
+        zip -r9 "$package" . -x "*.git*"
+    )
     sha256sum "$package" | tee "$package.sha256"
 }
 
