@@ -8,9 +8,9 @@ Kernel builder for the **Nothing Phone (4a)** (`Frogger` / `A069` / `SM7635`) ba
 - **BBRv3** TCP congestion control (backported to Android 14 6.1)
 - **FQ** and **CAKE** queue schedulers
 - **ThinLTO** (Clang Thin Link-Time Optimization)
-- **Battery & Overhead Optimization** (disabled SLUB_DEBUG, SCHED_DEBUG, and DEBUG_LIST overhead; enabled PM_AUTOSLEEP, PM_WAKELOCKS_GC and wakelock limits)
+- **Battery & Overhead Optimization** (disabled SLUB_DEBUG, SCHED_DEBUG, and DEBUG_LIST overhead; enabled PM_AUTOSLEEP)
 - **Multi-Gen LRU (MGLRU)** & **PM_AUTOSLEEP**
-- **ZRAM** with high-speed LZ4 compression and ZRAM Writeback support
+- **ZRAM** with high-speed LZ4 compression (optimized for maximum decompression speed and minimal latency)
 - **CCache** compilation acceleration
 - **AnyKernel3** flashable package for recovery or Kernel Flasher
 - Clang toolchain and CCache caching in GitHub Actions

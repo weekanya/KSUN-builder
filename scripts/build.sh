@@ -388,8 +388,8 @@ Custom Linux GKI kernel for **Nothing Phone (4a)** (\`SM7635\` / \`Frogger\` / \
 - 🛡️ **KernelSU Next**: Integrated from \`$KSU_REF\` branch with support for root and GKI modules.
 - 🚀 **TCP BBRv3**: Backported Google BBRv3 congestion control for high throughput and minimal latency.
 - 🌐 **Queue Schedulers**: **FQ** and **CAKE** queue disciplines enabled.
-- ⚡ **ZRAM + LZ4**: High-speed swap memory compression via LZ4 for ultra-low latency, plus ZRAM Writeback.
-- 🔋 **Battery & Overhead Optimization**: Disabled \`SLUB_DEBUG\`, \`SCHED_DEBUG\`, and \`DEBUG_LIST\` checks for lower CPU cycles and better autonomy; enabled \`PM_AUTOSLEEP\` and \`PM_WAKELOCKS_GC\` wakelock limiter.
+- ⚡ **ZRAM + LZ4**: High-speed swap memory compression via LZ4 for ultra-low latency and maximum performance.
+- 🔋 **Battery & Overhead Optimization**: Disabled \`SLUB_DEBUG\`, \`SCHED_DEBUG\`, and \`DEBUG_LIST\` checks for lower CPU cycles and better autonomy; enabled \`PM_AUTOSLEEP\`.
 - 🧠 **Multi-Gen LRU (MGLRU)**: \`CONFIG_LRU_GEN=y\` for optimized memory reclamation.
 - ⚙️ **ThinLTO**: Clang Thin Link-Time Optimization enabled.
 - 📦 **AnyKernel3**: Flashable zip package for Recovery / Kernel Flasher.
