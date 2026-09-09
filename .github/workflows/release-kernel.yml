@@ -1,8 +1,8 @@
-name: Weekly Release OnePlus Ace 3V Kernel
+name: Weekly Release Nothing Phone (4a) Kernel
 
 on:
   schedule:
-    - cron: '0 3 * * 0' # Runs every Sunday at 03:00 UTC
+    - cron: '0 3 * * 0'
   workflow_dispatch:
     inputs:
       custom_tag:
@@ -14,7 +14,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: ace-3v-kernel-release-${{ github.ref }}
+  group: nothing-phone-4a-release-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -69,7 +69,7 @@ jobs:
           else
             TAG_NAME="v$(date +'%Y.%m.%d')"
           fi
-          RELEASE_TITLE="OnePlus Ace 3V Kernel (${TAG_NAME})"
+          RELEASE_TITLE="Nothing Phone (4a) Kernel (${TAG_NAME})"
           echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
           echo "release_title=${RELEASE_TITLE}" >> "$GITHUB_OUTPUT"
 
@@ -80,8 +80,8 @@ jobs:
           RELEASE_TITLE: ${{ steps.release-info.outputs.release_title }}
         run: |
           gh release create "$TAG_NAME" \
-            artifacts/OnePlus-Ace-3V.zip \
-            artifacts/OnePlus-Ace-3V.zip.sha256 \
+            artifacts/Nothing-Phone-4a.zip \
+            artifacts/Nothing-Phone-4a.zip.sha256 \
             artifacts/Image \
             artifacts/Image.sha256 \
             --title "$RELEASE_TITLE" \
@@ -91,10 +91,10 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: OnePlus-Ace-3V-build-files
+          name: Nothing-Phone-4a-build-files
           path: |
             artifacts/**
-            !artifacts/OnePlus-Ace-3V.zip
+            !artifacts/Nothing-Phone-4a.zip
           if-no-files-found: warn
           retention-days: 14
 
@@ -102,7 +102,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: OnePlus-Ace-3V-AnyKernel3
-          path: artifacts/OnePlus-Ace-3V.zip
+          name: Nothing-Phone-4a-AnyKernel3
+          path: artifacts/Nothing-Phone-4a.zip
           if-no-files-found: warn
           retention-days: 14

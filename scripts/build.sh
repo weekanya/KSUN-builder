@@ -5,9 +5,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_DIR="${GITHUB_WORKSPACE:-$(dirname "$SCRIPT_DIR")}"
 
-KERNEL_REPOSITORY="${KERNEL_REPOSITORY:-https://github.com/OnePlusOSS/android_kernel_common_oneplus_sm7675.git}"
-KERNEL_BRANCH="${KERNEL_BRANCH:-oneplus/sm7675_b_16.0.0_ace_3v}"
-ONEPLUS_REPOSITORY="${ONEPLUS_REPOSITORY:-https://github.com/OnePlusOSS/android_kernel_modules_and_devicetree_oneplus_sm7675.git}"
+KERNEL_REPOSITORY="${KERNEL_REPOSITORY:-https://github.com/NothingOSS/android_kernel_msm-6.1_nothing_sm7635.git}"
+KERNEL_BRANCH="${KERNEL_BRANCH:-sm7635/b/mr_Frogger}"
 ANYKERNEL_REPOSITORY="${ANYKERNEL_REPOSITORY:-https://github.com/nothing-users/AnyKernel3-Nothing.git}"
 ANYKERNEL_BRANCH="${ANYKERNEL_BRANCH:-dontdelete}"
 CLANG_VERSION="${CLANG_VERSION:-clang-r487747c}"
@@ -24,7 +23,6 @@ CCACHE_MAXSIZE="${CCACHE_MAXSIZE:-5G}"
 
 KERNEL_DIR="${KERNEL_DIR:-$WORKSPACE_DIR/kernel_platform/common}"
 KERNEL_PLATFORM_DIR="$(dirname "$KERNEL_DIR")"
-ONEPLUS_SOURCE_DIR="${ONEPLUS_SOURCE_DIR:-$WORKSPACE_DIR/oneplus-source}"
 ANYKERNEL_DIR="${ANYKERNEL_DIR:-$WORKSPACE_DIR/AnyKernel3}"
 OUT_DIR="${OUT_DIR:-$KERNEL_DIR/out}"
 ARTIFACTS_DIR="${ARTIFACTS_DIR:-$WORKSPACE_DIR/artifacts}"
@@ -121,32 +119,6 @@ sync_kernel() {
     git clone --depth 1 --single-branch --branch "$KERNEL_BRANCH" "$KERNEL_REPOSITORY" "$KERNEL_DIR"
 }
 
-sync_oneplus_vendor() {
-    if [ ! -d "$ONEPLUS_SOURCE_DIR/.git" ]; then
-        git clone --depth 1 --filter=blob:none --sparse --single-branch \
-            --branch "$KERNEL_BRANCH" "$ONEPLUS_REPOSITORY" "$ONEPLUS_SOURCE_DIR"
-    fi
-
-    git -C "$ONEPLUS_SOURCE_DIR" sparse-checkout set \
-        vendor/oplus/kernel/cpu \
-        vendor/oplus/kernel/synchronize \
-        vendor/oplus/kernel/storage \
-        vendor/oplus/kernel/oplus_performance_5.10/oplus_resctrl
-
-    if [ -L "$WORKSPACE_DIR/vendor" ]; then
-        if [ "$(readlink -f "$WORKSPACE_DIR/vendor")" != "$(readlink -f "$ONEPLUS_SOURCE_DIR/vendor")" ]; then
-            printf 'Vendor symlink points to an unexpected location: %s\n' "$WORKSPACE_DIR/vendor" >&2
-            exit 1
-        fi
-        return
-    fi
-    if [ -e "$WORKSPACE_DIR/vendor" ]; then
-        printf 'Vendor path exists and is not a symlink: %s\n' "$WORKSPACE_DIR/vendor" >&2
-        exit 1
-    fi
-
-    ln -s "$ONEPLUS_SOURCE_DIR/vendor" "$WORKSPACE_DIR/vendor"
-}
 
 sync_toolchain() {
     if [ -x "$TOOLCHAIN_DIR/bin/clang" ]; then
@@ -246,6 +218,7 @@ apply_config() {
     local entry option value
     while IFS= read -r entry || [ -n "$entry" ]; do
         [ -n "$entry" ] || continue
+        [[ "$entry" =~ ^[[:space:]]*# ]] && continue
         option="${entry%%=*}"
         value="${entry#*=}"
         option="${option#CONFIG_}"
@@ -263,6 +236,7 @@ verify_config() {
     local entry option value
     while IFS= read -r entry || [ -n "$entry" ]; do
         [ -n "$entry" ] || continue
+        [[ "$entry" =~ ^[[:space:]]*# ]] && continue
         option="${entry%%=*}"
         value="${entry#*=}"
         if [ "$value" = n ]; then
@@ -333,22 +307,24 @@ build_kernel() {
 
 package_anykernel() {
     local image="$ARTIFACTS_DIR/Image"
-    local package="$ARTIFACTS_DIR/OnePlus-Ace-3V.zip"
+    local package="$ARTIFACTS_DIR/Nothing-Phone-4a.zip"
 
     if [ ! -s "$image" ]; then
         printf 'Kernel Image is missing: %s\n' "$image" >&2
         exit 1
     fi
 
+    sed -i 's/kernel\.string=.*/kernel.string=KernelSU Next for Nothing Phone (4a) (Frogger)/' "$ANYKERNEL_DIR/anykernel.sh" || true
+
     git -C "$ANYKERNEL_DIR" archive --format=zip --output="$package" HEAD
-    zip -j "$package" "$image"
+    zip -j "$package" "$image" "$ANYKERNEL_DIR/anykernel.sh"
     sha256sum "$package" | tee "$package.sha256"
 }
 
 generate_release_notes() {
     local notes="$ARTIFACTS_DIR/release_notes.md"
     local image="$ARTIFACTS_DIR/Image"
-    local package="$ARTIFACTS_DIR/OnePlus-Ace-3V.zip"
+    local package="$ARTIFACTS_DIR/Nothing-Phone-4a.zip"
     local build_time
     build_time="$(date -u +"%Y-%m-%d %H:%M:%S UTC")"
 
@@ -391,9 +367,9 @@ generate_release_notes() {
     [ -f "$image.sha256" ] && image_hash="$(awk '{print $1}' "$image.sha256")"
 
     cat <<EOF > "$notes"
-# OnePlus Ace 3V Kernel Release
+# Nothing Phone (4a) Kernel Release
 
-Custom Linux GKI kernel for **OnePlus Ace 3V** (\`SM7675\` / \`PJF110\`).
+Custom Linux GKI kernel for **Nothing Phone (4a)** (\`SM7635\` / \`Frogger\` / \`A069\`).
 
 ## 📋 Build Information
 
@@ -412,7 +388,8 @@ Custom Linux GKI kernel for **OnePlus Ace 3V** (\`SM7675\` / \`PJF110\`).
 - 🛡️ **KernelSU Next**: Integrated from \`$KSU_REF\` branch with support for root and GKI modules.
 - 🚀 **TCP BBRv3**: Backported Google BBRv3 congestion control for high throughput and minimal latency.
 - 🌐 **Queue Schedulers**: **FQ** and **CAKE** queue disciplines enabled.
-- ⚡ **ZRAM + ZSTD**: Swap memory compression via Zstandard for fast paging and high compression ratio.
+- ⚡ **ZRAM + LZ4**: High-speed swap memory compression via LZ4 for ultra-low latency, plus ZRAM Writeback.
+- 🔋 **Battery & Overhead Optimization**: Disabled \`SLUB_DEBUG\`, \`SCHED_DEBUG\`, and \`DEBUG_LIST\` checks for lower CPU cycles and better autonomy; enabled \`PM_AUTOSLEEP\`.
 - 🧠 **Multi-Gen LRU (MGLRU)**: \`CONFIG_LRU_GEN=y\` for optimized memory reclamation.
 - ⚙️ **ThinLTO**: Clang Thin Link-Time Optimization enabled.
 - 📦 **AnyKernel3**: Flashable zip package for Recovery / Kernel Flasher.
@@ -421,13 +398,13 @@ Custom Linux GKI kernel for **OnePlus Ace 3V** (\`SM7675\` / \`PJF110\`).
 
 | File | SHA-256 Checksum |
 | :--- | :--- |
-| \`OnePlus-Ace-3V.zip\` | \`$zip_hash\` |
+| \`Nothing-Phone-4a.zip\` | \`$zip_hash\` |
 | \`Image\` | \`$image_hash\` |
 
 ## 📲 Installation
 
-1. Download **\`OnePlus-Ace-3V.zip\`**.
-2. Flash the zip via **Kernel Flasher** app (recommended) or custom recovery (TWRP/OrangeFox).
+1. Download **\`Nothing-Phone-4a.zip\`**.
+2. Flash the zip via **Kernel Flasher** app (recommended) or custom recovery.
 3. Reboot device.
 4. Install the latest [KernelSU Next Manager APK](https://github.com/KernelSU-Next/KernelSU-Next/releases).
 EOF
@@ -442,7 +419,6 @@ fi
 
 install_dependencies
 sync_kernel
-sync_oneplus_vendor
 sync_toolchain
 setup_kernelsu
 apply_patches

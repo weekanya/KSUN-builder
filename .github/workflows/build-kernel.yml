@@ -1,4 +1,4 @@
-name: Build OnePlus Ace 3V Kernel
+name: Build Nothing Phone (4a) Kernel
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ace-3v-kernel-${{ github.ref }}
+  group: nothing-phone-4a-kernel-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -58,10 +58,10 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: OnePlus-Ace-3V-build-files
+          name: Nothing-Phone-4a-build-files
           path: |
             artifacts/**
-            !artifacts/OnePlus-Ace-3V.zip
+            !artifacts/Nothing-Phone-4a.zip
           if-no-files-found: warn
           retention-days: 7
 
@@ -69,7 +69,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: OnePlus-Ace-3V-AnyKernel3
-          path: artifacts/OnePlus-Ace-3V.zip
+          name: Nothing-Phone-4a-AnyKernel3
+          path: artifacts/Nothing-Phone-4a.zip
           if-no-files-found: warn
           retention-days: 7
