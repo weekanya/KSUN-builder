@@ -30,6 +30,7 @@ TOOLCHAIN_REPOSITORY_DIR="${TOOLCHAIN_REPOSITORY_DIR:-$WORKSPACE_DIR/toolchains/
 TOOLCHAIN_DIR="$TOOLCHAIN_REPOSITORY_DIR/$CLANG_VERSION"
 CONFIG_FRAGMENT="${CONFIG_FRAGMENT:-$WORKSPACE_DIR/patches/kernel.config}"
 BBRV3_PATCH="${BBRV3_PATCH:-$WORKSPACE_DIR/patches/bbrv3/0001-net-tcp-backport-BBRv3-to-android14-6.1.patch}"
+ZRAM_PATCH="${ZRAM_PATCH:-$WORKSPACE_DIR/patches/zram/0001-drivers-block-zram-default-lz4.patch}"
 
 report_failure() {
     local status="$1"
@@ -194,19 +195,30 @@ setup_kernelsu() {
 }
 
 apply_patches() {
-    if [ ! -f "$BBRV3_PATCH" ]; then
+    cd "$KERNEL_DIR"
+
+    if [ -f "$BBRV3_PATCH" ]; then
+        if git apply --reverse --check "$BBRV3_PATCH" >/dev/null 2>&1; then
+            printf 'BBRv3 patch is already applied\n'
+        else
+            git apply --check "$BBRV3_PATCH"
+            git apply "$BBRV3_PATCH"
+            printf 'Applied BBRv3 patch\n'
+        fi
+    else
         printf 'BBRv3 patch not found: %s\n' "$BBRV3_PATCH" >&2
         exit 1
     fi
 
-    cd "$KERNEL_DIR"
-    if git apply --reverse --check "$BBRV3_PATCH" >/dev/null 2>&1; then
-        printf 'BBRv3 patch is already applied\n'
-        return
+    if [ -f "$ZRAM_PATCH" ]; then
+        if git apply --reverse --check "$ZRAM_PATCH" >/dev/null 2>&1; then
+            printf 'ZRAM LZ4 patch is already applied\n'
+        else
+            git apply --check "$ZRAM_PATCH"
+            git apply "$ZRAM_PATCH"
+            printf 'Applied ZRAM LZ4 patch\n'
+        fi
     fi
-
-    git apply --check "$BBRV3_PATCH"
-    git apply "$BBRV3_PATCH"
 }
 
 apply_config() {
