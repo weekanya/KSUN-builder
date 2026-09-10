@@ -14,7 +14,7 @@ KSU_SETUP_URL="${KSU_SETUP_URL:-https://raw.githubusercontent.com/KernelSU-Next/
 KSU_REF="${KSU_REF:-dev}"
 CUSTOM_MANAGER_SIZE="${CUSTOM_MANAGER_SIZE:-0x387}"
 CUSTOM_MANAGER_HASH="${CUSTOM_MANAGER_HASH:-48a36d86b8a32c4317fd021c6d1ab324c1644a4234c0df4bc04dde4f3a2bffe9}" 
-LOCAL_VERSION="${LOCAL_VERSION:--android14-11}"
+LOCAL_VERSION="${LOCAL_VERSION:--android14-11-wee}"
 KBUILD_BUILD_USER="${KBUILD_BUILD_USER:-wee}"
 KBUILD_BUILD_HOST="${KBUILD_BUILD_HOST:-wee}"
 USE_CCACHE="${USE_CCACHE:-1}"
@@ -326,7 +326,7 @@ package_anykernel() {
         exit 1
     fi
 
-    sed -i 's/kernel\.string=.*/kernel.string=KernelSU Next for Nothing Phone (4a) (Frogger)/' "$ANYKERNEL_DIR/anykernel.sh" || true
+    sed -i 's/kernel\.string=.*/kernel.string=KernelSU Next for Nothing Phone (4a) (Frogger) by wee/' "$ANYKERNEL_DIR/anykernel.sh" || true
 
     if [ -f "$WORKSPACE_DIR/tools/arm64/busybox" ]; then
         cp -f "$WORKSPACE_DIR/tools/arm64/busybox" "$ANYKERNEL_DIR/tools/busybox"
