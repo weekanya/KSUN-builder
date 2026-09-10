@@ -31,6 +31,7 @@ TOOLCHAIN_DIR="$TOOLCHAIN_REPOSITORY_DIR/$CLANG_VERSION"
 CONFIG_FRAGMENT="${CONFIG_FRAGMENT:-$WORKSPACE_DIR/patches/kernel.config}"
 BBRV3_PATCH="${BBRV3_PATCH:-$WORKSPACE_DIR/patches/bbrv3/0001-net-tcp-backport-BBRv3-to-android14-6.1.patch}"
 ZRAM_PATCH="${ZRAM_PATCH:-$WORKSPACE_DIR/patches/zram/0001-drivers-block-zram-default-lz4.patch}"
+CVE_PATCH="${CVE_PATCH:-$WORKSPACE_DIR/patches/cve/0001-rtmutex-Use-waiter-task-instead-of-current-in-remove_waiter.patch}"
 
 report_failure() {
     local status="$1"
@@ -217,6 +218,16 @@ apply_patches() {
             git apply --check "$ZRAM_PATCH"
             git apply "$ZRAM_PATCH"
             printf 'Applied ZRAM LZ4 patch\n'
+        fi
+    fi
+
+    if [ -f "$CVE_PATCH" ]; then
+        if git apply --reverse --check "$CVE_PATCH" >/dev/null 2>&1; then
+            printf 'CVE-2026-43499 patch is already applied\n'
+        else
+            git apply --check "$CVE_PATCH"
+            git apply "$CVE_PATCH"
+            printf 'Applied CVE-2026-43499 (rtmutex) patch\n'
         fi
     fi
 }

@@ -9,6 +9,7 @@ Kernel builder for the **Nothing Phone (4a)** (`Frogger` / `A069` / `SM7635`) ba
 - **FQ** and **CAKE** network queue schedulers
 - **ZRAM LZ4 default** in-kernel patch (ultra-fast decompression with minimal CPU load)
 - **Multi-Gen LRU (MGLRU)** enabled
+- **CVE-2026-43499** security fix backported (rtmutex proxy-lock UAF fix)
 - **KMI-compliant** pure 64-bit Armv9 AnyKernel3 package with static aarch64 binaries
 - **CCache** compilation acceleration
 - **AnyKernel3** flashable package for recovery or Kernel Flasher
